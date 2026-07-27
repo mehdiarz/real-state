@@ -712,3 +712,720 @@ npm run dev -- -p 3001
 این پروژه یک نمونه کامل از وب‌اپلیکیشن فول‌استک با Next.js است که مفاهیم مهمی مانند Routing، Server و Client Component، API Route، احراز هویت، Session، نقش‌های کاربری، اتصال به MongoDB، مدل‌سازی داده و عملیات CRUD را در یک سامانه واقعی املاک پیاده‌سازی می‌کند.
 
 </div>
+
+---
+
+<div dir="ltr">
+
+# Real Estate Buying and Rental Platform
+
+A full-stack Persian web application for creating, managing, reviewing, and displaying real estate listings. Users can create an account, sign in to their dashboard, and add, edit, or delete property listings. Every newly created listing remains pending until an administrator reviews and publishes it, after which it becomes visible in the public listings section.
+
+This project is built with **Next.js 13 and the App Router**. It uses **MongoDB** for data storage, **Mongoose** for data modeling, and **NextAuth.js** for authentication and session management.
+
+---
+
+## Table of Contents
+
+- [Project Features](#project-features)
+- [Technologies](#technologies)
+- [Architecture and Application Flow](#architecture-and-application-flow)
+- [Prerequisites](#prerequisites)
+- [Installation and Setup](#installation-and-setup)
+- [Environment Variables](#environment-variables)
+- [Creating an Administrator](#creating-an-administrator)
+- [Usage Guide](#usage-guide)
+- [Pages and Routes](#pages-and-routes)
+- [Project APIs](#project-apis)
+- [Database Models](#database-models)
+- [Project Structure](#project-structure)
+- [Available Scripts](#available-scripts)
+- [Security Notes](#security-notes)
+- [Suggested Presentation Scenario](#suggested-presentation-scenario)
+- [Common Errors](#common-errors)
+- [Future Improvements](#future-improvements)
+
+---
+
+## Project Features
+
+### Public Section
+
+- Persian and right-to-left user interface
+- Property categories for apartments, villas, stores, and offices
+- Public list of approved property listings
+- Filtering listings by property category
+- Dedicated details page for every listing
+- Displaying the title, address, description, price, and construction date
+- Displaying property amenities and rules
+- Displaying real estate agency information and phone number
+- Converting English digits to Persian digits in the user interface
+- Displaying dates in the Persian calendar format
+- Copying the current listing URL for sharing
+
+### Authentication
+
+- User registration with email and password
+- Duplicate email detection
+- Password hashing with `bcryptjs`
+- Authentication through a NextAuth `Credentials` provider
+- JWT-based session management
+- Redirecting authenticated users away from sign-in and sign-up pages
+- Protecting the user dashboard and administrator panel
+- Signing out from the current account
+
+### User Dashboard
+
+- Displaying the user's email and registration date
+- Creating new property listings
+- Adding multiple amenities and rules to a property
+- Selecting the construction date with a Persian calendar
+- Viewing all listings created by the current user
+- Editing an existing listing
+- Deleting a listing
+- Keeping new listings pending until administrator approval
+
+### Administrator Panel
+
+- Identifying administrators through the `role` field
+- Preventing regular users from accessing administrator routes
+- Viewing listings awaiting approval
+- Publishing listings after review
+- Making approved listings available in the public section
+
+---
+
+## Technologies
+
+| Technology | Purpose |
+|---|---|
+| `Next.js 13.4` | Main framework for the front end and back end |
+| `React 18` | Component-based user interface development |
+| `App Router` | Pages, layouts, dynamic routes, and API Route Handlers |
+| `MongoDB` | NoSQL database |
+| `Mongoose` | Schemas, models, and MongoDB communication |
+| `NextAuth.js` | Authentication and session management |
+| `bcryptjs` | Password hashing and verification |
+| `CSS Modules` | Component-scoped styling |
+| `react-hot-toast` | Success and error notifications |
+| `react-icons` | User interface icons |
+| `react-multi-date-picker` | Persian calendar date selection |
+| `react-copy-to-clipboard` | Copying listing URLs |
+| `next/font` | Optimized loading of the local Yekan Bakh font |
+
+---
+
+## Architecture and Application Flow
+
+The project follows a **full-stack Next.js** architecture. Both the user interface and server-side APIs are implemented inside the same application.
+
+### Presentation Layer
+
+Application pages are located in `src/app`, while reusable user interface components are stored in `src/components`. Components are divided into three main groups:
+
+- `layout`: Shared page elements such as the Header, Footer, and dashboard Sidebar
+- `template`: The main structure of each page
+- `module`: Smaller reusable components such as cards, inputs, lists, and loaders
+
+### Server Logic Layer
+
+Route Handlers inside `src/app/api` process registration and property listing requests. These APIs handle initial validation, session verification, authorization, and database communication.
+
+### Data Layer
+
+The application contains two primary database models:
+
+- `User`: Stores account information and user roles
+- `Profile`: Stores property listing information
+
+Every property listing is connected to its creator through the `userId` field.
+
+### Listing Publication Flow
+
+1. A visitor creates an account and signs in.
+2. The user creates a new property listing from the dashboard.
+3. The listing is stored in MongoDB with the default value `published: false`.
+4. An administrator views the pending listing in the administrator panel.
+5. The administrator selects the publish action.
+6. The `published` value changes to `true`.
+7. The approved listing becomes visible on the public listings page.
+
+---
+
+## Prerequisites
+
+Before running the project, make sure the following requirements are available:
+
+- `Node.js` version `16.8` or newer; Node.js `18 LTS` is recommended.
+- `npm`
+- A local MongoDB database or a free MongoDB Atlas account
+- A code editor such as Visual Studio Code
+
+Check the installed versions with:
+
+</div>
+
+```bash
+node --version
+npm --version
+```
+
+<div dir="ltr">
+
+---
+
+## Installation and Setup
+
+### 1. Get the Project
+
+If the project is hosted in a Git repository:
+
+</div>
+
+```bash
+git clone <repository-url>
+cd real-state-main
+```
+
+<div dir="ltr">
+
+If you received the project as a ZIP archive, extract it and open a terminal in the project root directory.
+
+### 2. Install Dependencies
+
+</div>
+
+```bash
+npm install
+```
+
+<div dir="ltr">
+
+To install exactly the dependency versions recorded in `package-lock.json`, use:
+
+</div>
+
+```bash
+npm ci
+```
+
+<div dir="ltr">
+
+### 3. Create the Environment File
+
+Create a `.env.local` file in the project root and add the variables described in the next section.
+
+### 4. Run the Development Server
+
+</div>
+
+```bash
+npm run dev
+```
+
+<div dir="ltr">
+
+Open the following address in your browser:
+
+</div>
+
+```text
+http://localhost:3000
+```
+
+<div dir="ltr">
+
+---
+
+## Environment Variables
+
+Example `.env.local` file:
+
+</div>
+
+```env
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-long-random-secret
+MONGO_URI=mongodb+srv://USERNAME:PASSWORD@CLUSTER/DATABASE_NAME
+```
+
+<div dir="ltr">
+
+### Variable Descriptions
+
+| Variable | Description |
+|---|---|
+| `NEXTAUTH_URL` | Main application URL; use `http://localhost:3000` during local development. |
+| `NEXTAUTH_SECRET` | Private key used to sign authentication and session data |
+| `MONGO_URI` | Complete MongoDB connection string |
+
+Generate a random NextAuth secret with:
+
+</div>
+
+```bash
+openssl rand -base64 32
+```
+
+<div dir="ltr">
+
+> The `MONGO_USER` and `MONGO_PASS` variables are only necessary if you use them to construct the database connection string. The current implementation connects directly through `MONGO_URI`.
+
+### Local MongoDB Example
+
+</div>
+
+```env
+MONGO_URI=mongodb://127.0.0.1:27017/real-estate
+```
+
+<div dir="ltr">
+
+### MongoDB Atlas Example
+
+</div>
+
+```env
+MONGO_URI=mongodb+srv://myUser:myPassword@cluster0.example.mongodb.net/real-estate
+```
+
+<div dir="ltr">
+
+When using MongoDB Atlas, allow your current IP address in Network Access and include the correct Database User credentials in the connection string.
+
+---
+
+## Creating an Administrator
+
+Every newly registered account receives the default `USER` role. To access the administrator panel, first register a regular account through the application and then change its role to `ADMIN` in MongoDB.
+
+### Method 1: MongoDB Compass
+
+1. Open the project's database.
+2. Open the `users` collection.
+3. Find the desired user by email address.
+4. Change the `role` field from `USER` to `ADMIN`.
+5. Sign out of the application and sign in again.
+
+Example administrator document:
+
+</div>
+
+```json
+{
+  "email": "admin@example.com",
+  "password": "<hashed-password>",
+  "role": "ADMIN"
+}
+```
+
+<div dir="ltr">
+
+### Method 2: MongoDB Query
+
+</div>
+
+```javascript
+db.users.updateOne(
+  { email: "admin@example.com" },
+  { $set: { role: "ADMIN" } }
+)
+```
+
+<div dir="ltr">
+
+After signing in with an administrator account, the pending approval option becomes visible in the dashboard Sidebar and the `/admin` route becomes accessible.
+
+---
+
+## Usage Guide
+
+### Registration and Sign-In
+
+1. Select the sign-in option in the Header.
+2. If you do not have an account, navigate to the registration page.
+3. Enter an email address, password, and password confirmation.
+4. After successful registration, navigate to the sign-in page.
+5. Sign in with the registered email and password.
+
+### Creating a Listing
+
+1. Sign in and open the user dashboard.
+2. Select the add listing option.
+3. Enter the following information:
+   - Listing title
+   - Description
+   - Property address
+   - Phone number
+   - Price in Tomans
+   - Real estate agency name
+   - Property category
+   - Amenities
+   - Property rules
+   - Construction date
+4. Select the submit listing button.
+5. The listing appears in the user's listings page but remains unavailable publicly until administrator approval.
+
+### Editing and Deleting a Listing
+
+- On the user's listings page, the edit button opens the form with the current listing data.
+- After changing the information, the update listing button saves the changes.
+- The delete listing button removes the listing from the database.
+- The server-side API verifies that only the listing owner can edit or delete it.
+
+### Approving a Listing as an Administrator
+
+1. Sign in with an account that has the `ADMIN` role.
+2. Open the pending approval section.
+3. Review the unpublished listings.
+4. Select the publish button.
+5. The listing becomes available at `/buy-residential`.
+
+### Viewing and Filtering Listings
+
+- Use the Header to open the public listings page.
+- Select a property category from the Sidebar.
+- Select the view listing link to open the full property details.
+- The share button copies the current page URL to the Clipboard.
+
+---
+
+## Pages and Routes
+
+| Route | Access | Purpose |
+|---|---|---|
+| `/` | Public | Home page, services, property categories, and popular cities |
+| `/signin` | Guest | Sign in to an existing account |
+| `/signup` | Guest | Create a new user account |
+| `/buy-residential` | Public | View approved listings and filter by category |
+| `/buy-residential/[profileId]` | Public | View the details of a property listing |
+| `/dashboard` | Authenticated user | Dashboard home and registration date |
+| `/dashboard/add` | Authenticated user | Create a new property listing |
+| `/dashboard/my-profiles` | Authenticated user | View the current user's listings |
+| `/dashboard/my-profiles/[profileId]` | Authenticated user | Edit a property listing |
+| `/admin` | Administrator only | Review and publish pending listings |
+
+The category filter is provided through the Query String:
+
+</div>
+
+```text
+/buy-residential?category=apartment
+```
+
+<div dir="ltr">
+
+Supported category values:
+
+- `apartment`: Apartment
+- `villa`: Villa
+- `store`: Store
+- `office`: Office
+
+---
+
+## Project APIs
+
+### Authentication
+
+| Method | Route | Purpose |
+|---|---|---|
+| `POST` | `/api/auth/signup` | Create a new user account |
+| `GET/POST` | `/api/auth/[...nextauth]` | Handle sign-in, sign-out, and sessions through NextAuth |
+
+Example registration request body:
+
+</div>
+
+```json
+{
+  "email": "user@example.com",
+  "password": "strong-password"
+}
+```
+
+<div dir="ltr">
+
+### Property Listing Management
+
+| Method | Route | Access Level | Purpose |
+|---|---|---|---|
+| `GET` | `/api/profile` | Public | Retrieve published listings |
+| `POST` | `/api/profile` | Authenticated user | Create a listing |
+| `PATCH` | `/api/profile` | Listing owner | Update a listing |
+| `DELETE` | `/api/profile/delete/[profileId]` | Listing owner | Delete a listing |
+| `PATCH` | `/api/profile/publish/[profileId]` | Administrator | Publish a listing |
+
+Example request body for creating or updating a listing:
+
+</div>
+
+```json
+{
+  "title": "Two-Bedroom Apartment",
+  "description": "A bright and recently renovated apartment",
+  "location": "Saadat Abad, Tehran",
+  "phone": "09121234567",
+  "realState": "Iranian Home",
+  "price": 8500000000,
+  "constructionDate": "2021-03-21T00:00:00.000Z",
+  "category": "apartment",
+  "amenities": ["Elevator", "Parking", "Storage"],
+  "rules": ["Pets are not allowed"]
+}
+```
+
+<div dir="ltr">
+
+The `_id` field must also be included when updating an existing listing.
+
+### Important HTTP Status Codes
+
+| Code | Meaning in This Project |
+|---|---|
+| `200` | The request completed successfully. |
+| `201` | A user account or listing was created successfully. |
+| `400` | The listing information is incomplete or invalid. |
+| `401` | The user is not authenticated. |
+| `403` | The user is not authorized to perform the operation. |
+| `404` | The requested user or resource was not found. |
+| `422` | Registration data is invalid or the email already exists. |
+| `500` | An internal server or database connection error occurred. |
+
+---
+
+## Database Models
+
+### User Model
+
+Model file: `src/models/User.js`
+
+| Field | Type | Description |
+|---|---|---|
+| `email` | `String` | User email address |
+| `password` | `String` | Hashed password |
+| `role` | `String` | User role; defaults to `USER` |
+| `createdAt` | `Date` | Account creation date |
+
+### Profile Model
+
+Model file: `src/models/Profile.js`
+
+| Field | Type | Description |
+|---|---|---|
+| `title` | `String` | Listing title |
+| `description` | `String` | Full property description |
+| `location` | `String` | Property address |
+| `phone` | `String` | Contact phone number |
+| `realState` | `String` | Real estate agency name |
+| `price` | `Number` | Price in Tomans |
+| `constructionDate` | `Date` | Property construction date |
+| `category` | `String` | Property type |
+| `amenities` | `[String]` | Property amenities |
+| `rules` | `[String]` | Property rules |
+| `userId` | `ObjectId` | Identifier of the listing creator |
+| `published` | `Boolean` | Approval and publication status |
+| `createdAt` | `Date` | Listing creation time |
+| `updatedAt` | `Date` | Last update time |
+
+Allowed `category` values in the Schema:
+
+</div>
+
+```javascript
+["villa", "apartment", "store", "office"]
+```
+
+<div dir="ltr">
+
+---
+
+## Project Structure
+
+</div>
+
+```text
+real-state-main/
+├── public/
+│   ├── fonts/                    # Local Yekan Bakh font files
+│   └── images/                   # Property category images
+├── src/
+│   ├── app/
+│   │   ├── (auth)/
+│   │   │   ├── signin/          # Sign-in page
+│   │   │   └── signup/          # Registration page
+│   │   ├── admin/               # Administrator approval panel
+│   │   ├── api/
+│   │   │   ├── auth/            # Registration and NextAuth APIs
+│   │   │   └── profile/         # Listing CRUD and publication APIs
+│   │   ├── buy-residential/     # Public listing and details pages
+│   │   ├── dashboard/           # User dashboard and listing management
+│   │   ├── globals.css          # Global styles
+│   │   ├── layout.js            # Root application layout
+│   │   └── page.js              # Home page
+│   ├── components/
+│   │   ├── layout/              # Header, Footer, and DashboardSidebar
+│   │   ├── module/              # Small reusable components
+│   │   └── template/            # Main page templates
+│   ├── constants/               # Static text and icons
+│   ├── models/                  # User and Profile models
+│   ├── providers/               # NextAuth SessionProvider
+│   └── utils/                   # DB connection, auth, fonts, and digit helpers
+├── .env.local                   # Private environment variables
+├── jsconfig.json                # Import path aliases
+├── next.config.js               # Next.js configuration
+├── package.json                 # Dependencies and scripts
+└── README.md
+```
+
+<div dir="ltr">
+
+### Configured Import Aliases
+
+The following aliases are defined in `jsconfig.json` to keep imports shorter and easier to read:
+
+| Alias | Path |
+|---|---|
+| `@/app/*` | `src/app/*` |
+| `@/api/*` | `src/app/api/*` |
+| `@/models/*` | `src/models/*` |
+| `@/utils/*` | `src/utils/*` |
+| `@/layout/*` | `src/components/layout/*` |
+| `@/module/*` | `src/components/module/*` |
+| `@/template/*` | `src/components/template/*` |
+| `@/providers/*` | `src/providers/*` |
+| `@/constants/*` | `src/constants/*` |
+| `@/public/*` | `public/*` |
+
+---
+
+## Available Scripts
+
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Run the application in development mode |
+| `npm run build` | Create a production build |
+| `npm run start` | Start the production server after building |
+| `npm run lint` | Check the source code with ESLint |
+
+Run the production version with:
+
+</div>
+
+```bash
+npm run build
+npm run start
+```
+
+<div dir="ltr">
+
+---
+
+## Security Notes
+
+- User passwords are never stored as plain text and are hashed by `bcryptjs` with a cost factor of `12`.
+- Creating, updating, and deleting property listings requires a valid session.
+- During update and deletion operations, the listing owner identifier is compared with the current user identifier.
+- Only accounts with the `ADMIN` role can publish listings.
+- `NEXTAUTH_SECRET` must be long, random, and private.
+- Environment files must not be committed to a public repository.
+- Real database credentials, passwords, and secrets must never be placed in the README or source code.
+- In production, `NEXTAUTH_URL` must match the application's public domain.
+- A production-ready version should implement stronger validation for email addresses, passwords, phone numbers, and listing inputs.
+
+> Important: If an `.env` file has already been tracked by Git, adding it to `.gitignore` is not sufficient. Rotate all exposed secrets and database credentials, then remove the file from Git tracking and, if necessary, repository history.
+
+---
+
+## Suggested Presentation Scenario
+
+The following order provides a clear project demonstration:
+
+1. **Problem introduction:** The need for a centralized system to create and browse real estate listings
+2. **Technology overview:** Next.js, React, MongoDB, Mongoose, and NextAuth
+3. **Home page demonstration:** Categories, services, and the Persian interface
+4. **User registration:** Password confirmation validation and account creation
+5. **User sign-in:** Credentials Provider, JWT, and session management
+6. **Listing creation:** Form fields, category selection, amenities, and Persian date picker
+7. **User dashboard:** Viewing, editing, and deleting the newly created listing
+8. **Publication workflow:** Explaining why a new listing starts with `published: false`
+9. **Administrator sign-in:** Reviewing and approving a pending listing
+10. **Public listing demonstration:** Viewing the approved listing, filtering, and opening its details
+11. **Code structure:** Introducing the `app`, `api`, `models`, and `components` directories
+12. **Conclusion:** Security, authorization, and possible future improvements
+
+### Key Points for an Oral Presentation
+
+- Next.js makes it possible to implement the front end and back end in the same project.
+- Server Components are used for server-side data retrieval, while Client Components handle user interactions.
+- NextAuth manages sessions, while MongoDB stores user accounts and property listings.
+- The `userId` field creates the relationship between users and their listings.
+- Ownership verification prevents one user from editing or deleting another user's listing.
+- The `ADMIN` role provides a separate authorization level for content publication.
+
+---
+
+## Common Errors
+
+### MongoDB Connection Error
+
+- Verify the value of `MONGO_URI`.
+- Check the MongoDB Atlas username and password.
+- Allow your current IP address in Atlas Network Access.
+- URL-encode passwords containing special characters such as `@` or `/`.
+
+### NextAuth or Session Error
+
+- Verify that `NEXTAUTH_SECRET` exists.
+- During local development, `NEXTAUTH_URL` should be `http://localhost:3000`.
+- Restart the development server after changing environment variables.
+
+### A Listing Does Not Appear Publicly
+
+- New listings are unpublished by default.
+- Sign in as an administrator and approve the listing through `/admin`.
+- Check the listing's `published` value in MongoDB.
+
+### The Listings Page Does Not Open on Another Port
+
+The API URL in `src/app/buy-residential/page.js` is hard-coded as `http://localhost:3000/api/profile`. Running the application on a different port or domain therefore requires updating this URL or replacing the API request with a direct database query.
+
+### Port 3000 Is Already in Use
+
+</div>
+
+```bash
+npm run dev -- -p 3001
+```
+
+<div dir="ltr">
+
+When using another port, update `NEXTAUTH_URL` and consider the hard-coded API URL described above.
+
+---
+
+## Future Improvements
+
+- Add image uploading for property listings
+- Add search by title, city, or neighborhood
+- Add advanced filtering by price and construction date
+- Add pagination or Infinite Scroll
+- Add a rejected status and rejection reason for administrators
+- Allow administrators to unpublish listings
+- Add email verification and password recovery
+- Validate inputs with `Zod` or a similar library
+- Add Rate Limiting to authentication APIs
+- Add Unit, Integration, and End-to-End tests
+- Make every dashboard and details page fully responsive
+- Remove the hard-coded `localhost` URL and use a production-compatible approach
+- Use an environment variable for the API base URL
+- Add custom error, Loading UI, and Not Found pages
+- Optimize database queries and add indexes for email and searchable fields
+
+---
+
+## Conclusion
+
+This project is a complete example of a full-stack Next.js application. It demonstrates important concepts such as Routing, Server and Client Components, API Route Handlers, authentication, sessions, user roles, MongoDB integration, data modeling, authorization, and CRUD operations in a practical real estate platform.
+
+</div>
